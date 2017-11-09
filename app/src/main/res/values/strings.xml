@@ -1,0 +1,61 @@
+<resources>
+    <string name="app_name">PopularMoviesApp</string>
+    <string name="app_label">Popular Movies App</string>
+
+    ------------------------------------------------
+    <!--Strings for AllMoviesActivity-->
+    ------------------------------------------------
+    <string name="tv_error_loading_data">An error was encountered while trying to access the web.\n
+        Please try again.
+    </string>
+    <string name="tv_no_network_connection">There is no network connectivity.\n
+        Please try again later.
+    </string>
+
+    <!-- Activity Labels -->
+    <string name="label_all_movies_activity_most_popular_movies">The Most Popular Movies</string>
+    <string name="label_all_movies_activity_top_rated_movies">Top Rated Movies</string>
+
+    ------------------------------------------------
+    <!--Strings for MovieDetailsActivity-->
+    ------------------------------------------------
+
+    <!--Note: opening bracket "<" is HTML-escaped, using the "&lt"-->
+    <string name="movie_details_original_title">&lt;b>Original title:&lt;/b> %1$s</string>
+    <string name="movie_details_rating">&lt;b>Rating:&lt;/b> %1$s</string>
+    <string name="movie_details_vote_count">&lt;b>Votes:&lt;/b> %1$s</string>
+    <string name="movie_details_release_date">&lt;b>Released:&lt;/b> %1$s</string>
+
+    ------------------------------------------------
+    <!--Strings for NavigationDrawer of AllMoviesActivity-->
+    ------------------------------------------------
+    <!-- NavigationDrawer ListView Items names -->
+    <string name="nav_dr_list_item_01_most_popular">Most popular</string>
+    <string name="nav_dr__list_item_02_top_rated">Top rated</string>
+    <string name="nav_dr__list_item_03_search">Search</string>
+    <string name="nav_dr__list_item_04_about">About</string>
+
+    <!-- NavigationDrawer resources to describe actions for accessibility -->
+    <string name="nav_dr_accessibility_open_drawer">Opens navigation drawer of the application</string>
+    <string name="nav_dr_accessibility_close_drawer">Closes navigation drawer of the application</string>
+
+    <!--Todo(24) these to be changed / removed-->
+    <string name="nav_dr_Activity_title">My activity</string>
+    <string name="nav_dr_Drawer_title">My nav drawer</string>
+
+    ------------------------------------------------
+    <!--Strings for MovieSearchActivity & the related widgets-->
+    ------------------------------------------------
+
+    <string name="menu_labels_search">Search</string>
+    <string name="search_hint_text_for_search_widget">search for movies...</string>
+
+    ------------------------------------------------
+    <!--Strings for AboutActivity-->
+    ------------------------------------------------
+
+    <string name="about_TMDb_API_disclaimer">This product uses the TMDb API but is not endorsed or certified by TMDb.</string>
+    <string name="about_version">Version 1.0</string>
+    <string name="about_release_date">Released 2017-Nov</string>
+
+</resources>

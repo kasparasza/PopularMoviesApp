@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Dimensions for widgets, used in UI -->
+    <dimen name="pb_size">42dp</dimen>
+
+
+    <!-- Dimensions for margins, padding, etc. -->
+    <dimen name="margin_padding_4dp">4dp</dimen>
+    <dimen name="margin_padding_8dp">8dp</dimen>
+    <dimen name="margin_padding_16dp">16dp</dimen>
+    <dimen name="margin_padding_72dp">72dp</dimen>
+    <dimen name="margin_padding_1dp">1dp</dimen>
+
+    ------------------------------------------------
+    <!--Dimensions for Views in AllMoviesActivity-->
+    ------------------------------------------------
+    <!-- Note: in java file dimensions will be accessed via .getDimension(). getDimension() method takes into account
+density of the screen, therefore its return value is: dimension [as defined here] * screen density multiple.
+Take this into account while setting dimensions dynamically in java. -->
+    <dimen name="iv_movie_poster_height">200dp</dimen>
+    <dimen name="iv_movie_poster_width">150dp</dimen>
+    <dimen name="target_width_of_poster">150dp</dimen>
+
+    ------------------------------------------------
+    <!--Dimensions for Views in Navigation Drawer-->
+    ------------------------------------------------
+    <dimen name="nav_dr_list_item_height">48dp</dimen>
+    <dimen name="nav_dr_list_item_icon_size">24dp</dimen>
+    <dimen name="nav_dr_width">240dp</dimen>
+
+    ------------------------------------------------
+    <!--Dimensions for Views in AboutActivity-->
+    ------------------------------------------------
+    <dimen name="about_app_icon_size">144dp</dimen>
+    <dimen name="about_TMDb_icon_size">96dp</dimen>
+
+</resources>

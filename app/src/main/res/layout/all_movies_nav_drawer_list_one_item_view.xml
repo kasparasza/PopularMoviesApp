@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/nav_dr_iv_list_item_icon"
+        tools:src="@drawable/ic_action_info"
+        android:layout_marginLeft="@dimen/margin_padding_16dp"
+        android:layout_centerVertical="true"
+        android:layout_width="@dimen/nav_dr_list_item_icon_size"
+        android:layout_height="@dimen/nav_dr_list_item_icon_size" />
+
+    <TextView
+        android:id="@+id/nav_dr_tv_list_item_name"
+        android:layout_marginLeft="@dimen/margin_padding_72dp"
+        android:layout_marginRight="@dimen/margin_padding_16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/nav_dr_list_item_height"
+        android:gravity="center"
+        tools:text="List item of navigation drawer" />
+
+</RelativeLayout>

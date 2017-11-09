@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.kasparasza.popularmoviesapp">
+
+    <!-- This permission is necessary in order to perform network access. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- This permission is necessary to check whether we have network in order to perform the access. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_label"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".AllMoviesActivity"
+            android:launchMode="singleTop">
+
+            <!--
+      this parameter controls, that a new instance of the Main activity
+                                            is not created when navigating back from its children
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <!-- meta tag provides additional data for display of Search results -->
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+
+        <!-- //Todo (manif_01)- parent activity definition here may be not good, that depends on final navigation -->
+        <activity
+            android:name=".MovieDetailsActivity"
+            android:parentActivityName=".AllMoviesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AllMoviesActivity" />
+        </activity>
+
+        <!-- //Todo (manif_01)- parent activity definition here may be not good, that depends on final navigation -->
+        <activity
+            android:name=".AboutActivity"
+            android:parentActivityName=".AllMoviesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AllMoviesActivity" />
+        </activity>
+    </application>
+
+</manifest>

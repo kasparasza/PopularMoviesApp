@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.kasparasza.popularmoviesapp.MovieDetailsActivity">
+
+    <!--Todo(210) define landscape layout as well -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/margin_padding_8dp"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/iv_movie_poster_in_detailed_activity"
+                android:layout_width="1dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="7"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                tools:src="@drawable/image_placeholder"/>
+
+            <RelativeLayout
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/margin_padding_4dp"
+                android:layout_weight="3">
+
+                <TextView
+                    android:id="@+id/tv_user_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="rating: 9.0" />
+
+                <TextView
+                    android:id="@+id/tv_vote_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_user_rating"
+                    tools:text="votes: 9555" />
+
+                <TextView
+                    android:id="@+id/tv_release_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_vote_count"
+                    tools:text="released: 2017/11/06" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_movie_original_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_padding_4dp"
+            android:textStyle="bold"
+            tools:text="Title of The Movie in Original Language" />
+
+        <TextView
+            android:id="@+id/tv_movie_plot_synopsis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_padding_4dp"
+            tools:text="Movie plot synopsis." />
+
+    </LinearLayout>
+
+
+</ScrollView>
