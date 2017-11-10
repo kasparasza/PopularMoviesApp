@@ -1,6 +1,7 @@
 package com.example.kasparasza.popularmoviesapp.utilities;
 
 import android.util.Log;
+import android.util.Pair;
 
 import com.example.kasparasza.popularmoviesapp.Movie;
 import org.json.JSONArray;
@@ -18,8 +19,19 @@ public class JsonUtilities {
     private static final String TAG = JsonUtilities.class.getSimpleName();
 
     /*
+    * Integer constants to be used as JSON response code
+    * */
+    public final static Integer JSON_RESPONSE_ERROR = 0;
+    public final static Integer JSON_RESPONSE_WITH_RESULTS = 1; // results Array is not empty and the results String displays not the last String
+    public final static Integer JSON_RESPONSE_NO_RESULTS = 2; // e.g. {"page":2,"total_results":0,"total_pages":1,"results":[]}
+    public final static Integer JSON_RESPONSE_PAGE_LIMIT_REACHED = 3; // e.g. {"page":2,"total_results":10,"total_pages":1,"results":[]}
+
+    /*
      * JSON KEYS - used in retrieving data from the raw JSON
      */
+    private final static String PAGE = "page";
+    private final static String TOTAL_RESULTS = "total_results";
+    private final static String TOTAL_PAGES = "total_pages";
     private final static String RESULTS = "results";
     private final static String VOTE_AVERAGE = "vote_average";
     private final static String VOTE_COUNT = "vote_count";
@@ -42,18 +54,43 @@ public class JsonUtilities {
     /**
      * Reads JSONString and extracts relevant data from it
      * @param JSONString - result of the previous http query parsed into String format
-     * @return List<NewsArticle> a list of NewsArticle objects
+     * @return Pair of two objects: {@link List} a list of Movie objects
+     * & {@link Integer} json response code
      */
-    public static List<Movie> extractFromJSONString(String JSONString) {
+    public static Pair<List<Movie>, Integer> extractFromJSONString(String JSONString) {
+
         List<Movie> movieList = new ArrayList<>();
+        Integer jsonResponseCode;
+
         try {
             // convert String to a JSONObject
             JSONObject jsonObject = new JSONObject(JSONString);
 
+            // set local variables to be used in determining JSON response code
+            int currentPageOfResults = 0;
+            int totalNumberOfPages = 0;
+            int totalResults = 0;
+            if(jsonObject.has(PAGE)){
+                currentPageOfResults = jsonObject.getInt(PAGE);
+            }
+            if(jsonObject.has(TOTAL_PAGES)){
+                totalNumberOfPages = jsonObject.getInt(TOTAL_PAGES);
+            }
+            if(jsonObject.has(TOTAL_RESULTS)){
+                totalResults = jsonObject.getInt(TOTAL_RESULTS);
+            }
+
             // check whether we have "results" JSONArray available at all,
             // if true - extract the "results" JSONArray
             // if true - the parsing continues, else - we return an empty ArrayList, as there actually is no data to display
-            if(jsonObject.has(RESULTS)){
+            if(jsonObject.has(RESULTS) && totalResults > 0){
+
+                if (currentPageOfResults >= totalNumberOfPages){
+                    jsonResponseCode = JSON_RESPONSE_PAGE_LIMIT_REACHED;
+                } else {
+                    jsonResponseCode = JSON_RESPONSE_WITH_RESULTS;
+                }
+
                 JSONArray resultsArray = jsonObject.getJSONArray(RESULTS);
 
                 // Loop through each item in the array
@@ -135,12 +172,18 @@ public class JsonUtilities {
                     // add the object to List
                     movieList.add(movie);
                 }
+            } else if(jsonObject.has(RESULTS) && totalResults == 0){
+                jsonResponseCode = JSON_RESPONSE_NO_RESULTS;
+            } else {
+                jsonResponseCode = JSON_RESPONSE_ERROR;
             }
         } catch (JSONException json_exception) {
+            jsonResponseCode = JSON_RESPONSE_ERROR;
             json_exception.printStackTrace();
             Log.e(TAG, "An exception was encountered while trying to read JSONString " + json_exception);
         }
         // return result of the method
-        return movieList;
+        Pair<List<Movie>, Integer> pair = Pair.create(movieList, jsonResponseCode);
+        return pair;
     }
 }

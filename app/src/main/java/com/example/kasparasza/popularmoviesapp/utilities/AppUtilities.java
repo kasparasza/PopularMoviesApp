@@ -69,45 +69,29 @@ public class AppUtilities {
     // Todo(700) afterwards all methods can take the same name, as their parameters are different
 
     /**
-     * Builds the general URL used to query www.themoviedb.org API
-     *
+     * Builds the URL used to query www.themoviedb.org API
+     * @param pageNumber - page number of json response
+     * @param queryPath - part of the query path (null in case search/movie endpoint is used)
+     * @param searchQueryString - query parameter (null in case discover/movie endpoint is used)
      * @return The URL to use to query the server.
      */
-    public static URL buildGeneralUrl(int pageNumber, String queryPath) {
-        Uri builtUri = Uri.parse(BASE_MOVIE_DB_URL).buildUpon()
-                .appendEncodedPath(queryPath)
-                .appendQueryParameter(API_KEY_PARAM, API_KEY)
-                .appendQueryParameter(PAGE_PARAM, Integer.toString(pageNumber))
-                .build();
+    public static URL buildUrl(int pageNumber, String queryPath, String searchQueryString){
+        Uri builtUri;
+        if(searchQueryString.equals("")){
+            builtUri = Uri.parse(BASE_MOVIE_DB_URL).buildUpon()
+                    .appendEncodedPath(queryPath)
+                    .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                    .appendQueryParameter(PAGE_PARAM, Integer.toString(pageNumber))
+                    .build();
+        } else {
+            searchQueryString = formatStringForUrl(searchQueryString);
 
-        URL url = null;
-        try {
-            url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            builtUri = Uri.parse(SEARCH_MOVIE_DB_URL).buildUpon()
+                    .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                    .appendQueryParameter(PAGE_PARAM, Integer.toString(pageNumber))
+                    .appendQueryParameter(SEARCH_PARAM, searchQueryString)
+                    .build();
         }
-
-        Log.d(TAG, "Built URI " + url); //<-----------------------------------------------------------------------
-
-        return url;
-    }
-
-    /**
-     * Builds the URL used to search for Movies in the www.themoviedb.org API
-     *
-     * @return The URL to use to query the server.
-     */
-    public static URL buildSearchUrl(int pageNumber, String searchQueryString) {
-
-        // format search query String for Url
-        searchQueryString = formatStringForUrl(searchQueryString);
-
-        Uri builtUri = Uri.parse(SEARCH_MOVIE_DB_URL).buildUpon()
-                .appendQueryParameter(API_KEY_PARAM, API_KEY)
-                .appendQueryParameter(PAGE_PARAM, Integer.toString(pageNumber))
-                .appendQueryParameter(SEARCH_PARAM, searchQueryString)
-                .build();
-
         URL url = null;
         try {
             url = new URL(builtUri.toString());
@@ -140,7 +124,6 @@ public class AppUtilities {
         return url;
     }
 
-
     /**
      * This method returns the entire result from the HTTP response.
      *
@@ -163,7 +146,7 @@ public class AppUtilities {
         urlConnection.setRequestMethod("GET");
         urlConnection.connect();
         try {
-            Log.v(TAG, "ESTABLISHING HTTP CONNECTION"); //<-----------------------------------------------------------------------
+            Log.v(TAG, "ESTABLISHING HTTP CONNECTION with URL " + url); //<-----------------------------------------------------------------------
 
             // check whether the connection response code is appropriate (in this case == 200)
             if (urlConnection.getResponseCode() == 200){

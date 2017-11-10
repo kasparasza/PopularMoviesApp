@@ -20,6 +20,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,7 +66,6 @@ public class AllMoviesActivity extends AppCompatActivity
 
     // constants used as ID's, key names, etc.:
     private static int LOADER_ID_01 = 1;
-    private static int LOADER_ID_02 = 2;
     private static final String PAGE_NUMBER_KEY = "PAGE_NUMBER_KEY";
     private static final String CACHED_MOVIE_LIST_KEY = "CACHED_MOVIE_LIST_KEY";
     private static final String LINEAR_LAYOUT_MANAGER_KEY = "LINEAR_LAYOUT_MANAGER_STATE_KEY";
@@ -84,6 +84,7 @@ public class AllMoviesActivity extends AppCompatActivity
     private ArrayList<Movie> cachedMovieData = new ArrayList<>(); // This List will help cache our Movie data,
     // so that numerous http requests are avoided
     private EndlessRecyclerViewScrollListener recyclerViewScrollListener;
+    private static Integer jsonResponseCode = null;
     // variables used for Navigation Drawer implementation
     private DrawerLayout navDrLayout;
     private ListView navDrListView;
@@ -237,13 +238,10 @@ public class AllMoviesActivity extends AppCompatActivity
                         * Loader call - case 2 of 3
                         * We call loader methods in case our recycler view is running out of items for display
                         * */
-                        if(searchModeIsOn){
-                            manageLoaders(LOADER_ID_02);
-                        } else {
-                            manageLoaders(LOADER_ID_01);
-                        }
-
+                        manageLoaders();
                     }
+
+                    // Todo(35) is this still necessary, is it working as intended
 
                     // we override another method, which will be responsible to track situations where
                     // we have reached the bottom of the data list, however, there is no network connection
@@ -252,14 +250,12 @@ public class AllMoviesActivity extends AppCompatActivity
                     public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                         super.onScrollStateChanged(recyclerView, newState);
 
-                        Context context = recyclerView.getContext();
-
                         // canScrollVertically(1) - checks that vertical scrolling is possible, where constant "int 1"
                         // denotes bottom direction
                         if (!recyclerView.canScrollVertically(1) &&
-                                !AppUtilities.checkNetworkConnection(context) &&
+                                !AppUtilities.checkNetworkConnection(getApplicationContext()) &&
                                 cachedMovieData.size() != 0) {
-                            Toast.makeText(context, getString(R.string.tv_no_network_connection), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(recyclerView.getContext(), getString(R.string.tv_no_network_connection), Toast.LENGTH_SHORT).show();
                         }
                     }
                 };
@@ -318,8 +314,8 @@ public class AllMoviesActivity extends AppCompatActivity
         // if we have no data to display
         if (cachedMovieData.size() == 0) {
             // Call loader methods - if there is network connection
-            if (AppUtilities.checkNetworkConnection(this)) {
-                manageLoaders(LOADER_ID_01);
+            if (AppUtilities.checkNetworkConnection(getApplicationContext())) {
+                manageLoaders();
             } else {
                 // If there is no network connection - display error message in TextView
                 errorMessageDisplayView.setText(R.string.tv_no_network_connection);
@@ -332,8 +328,6 @@ public class AllMoviesActivity extends AppCompatActivity
             // If there is no network connection - the user will be informed via Toast.
             // This action will be performed by the @EndlessRecyclerViewScrollListener
         }
-
-        // Todo (3): Improve / customize layout to display one item in the grid view
     }
 
     /*****************************************************
@@ -374,20 +368,20 @@ public class AllMoviesActivity extends AppCompatActivity
 
     /*****************************************************
      * LoaderManager methods - with these our LoaderManager will have
-     * a control upon al the Loaders used in the Activity
+     * a control upon all the Loaders used in the Activity
      ******************************************************/
 
     // note: usually this should be a part of OnCreate method. Documented in a separate  method for more clarity.
-    private void manageLoaders(int loaderId) {
+    private void manageLoaders() {
 
         // note: null is used in place of a Bundle object since all additional
         // parameters for Loader are global variables
 
         // get LoaderManager and initialise the loader
-        if (getSupportLoaderManager().getLoader(loaderId) == null) {
-            getSupportLoaderManager().initLoader(loaderId, null, this);
+        if (getSupportLoaderManager().getLoader(LOADER_ID_01) == null) {
+            getSupportLoaderManager().initLoader(LOADER_ID_01, null, this);
         } else {
-            getSupportLoaderManager().restartLoader(loaderId, null, this);
+            getSupportLoaderManager().restartLoader(LOADER_ID_01, null, this);
         }
     }
 
@@ -420,12 +414,7 @@ public class AllMoviesActivity extends AppCompatActivity
             public List<Movie> loadInBackground() {
 
                 // obtain the Url, used for the http request
-                URL url;
-                if(id == LOADER_ID_01){
-                    url = AppUtilities.buildGeneralUrl(pageNumberBeingQueried, sortOrderOfResults);
-                } else {
-                    url = AppUtilities.buildSearchUrl(pageNumberBeingQueried, searchQuerySubmitted);
-                }
+                URL url = AppUtilities.buildUrl(pageNumberBeingQueried, sortOrderOfResults, searchQuerySubmitted);
 
                 // perform the url request
                 String jsonResponseString = null;
@@ -441,7 +430,9 @@ public class AllMoviesActivity extends AppCompatActivity
                 // if the response String is not null - parse it
                 if (jsonResponseString != null) {
                     // call helper method to parse JSON
-                    movieList = JsonUtilities.extractFromJSONString(jsonResponseString);
+                    Pair<List<Movie>, Integer> result = JsonUtilities.extractFromJSONString(jsonResponseString);
+                    movieList = result.first;
+                    jsonResponseCode = result.second;
                 }
                 return movieList;
             }
@@ -471,6 +462,10 @@ public class AllMoviesActivity extends AppCompatActivity
 
             // update the data set of the adapter
             movieAdapter.setAdapterData(cachedMovieData);
+
+        } else if (jsonResponseCode.equals(JsonUtilities.JSON_RESPONSE_NO_RESULTS)) {
+
+                Toast.makeText(this, "NO RESULTS", Toast.LENGTH_SHORT).show(); //----------------------------------------- REPLACE WITH A VIEW
 
         } else {
             showLoadingErrorMessage();
@@ -520,7 +515,7 @@ public class AllMoviesActivity extends AppCompatActivity
             // change the sort order of results that are being queried by the Loader
             sortOrderOfResults = AppUtilities.QUERY_PATH_POPULAR;
             // call helper method to perform further actions
-            performQueryAfterSharedPreferencesChange();
+            performNewQuery();
 
         } else if (nameOfTheClickedItem.equals(getString(R.string.nav_dr__list_item_02_top_rated))){
 
@@ -529,7 +524,7 @@ public class AllMoviesActivity extends AppCompatActivity
             // change the sort order of results that are being queried by the Loader
             sortOrderOfResults = AppUtilities.QUERY_PATH_TOP_RATED;
             // call helper method to perform further actions
-            performQueryAfterSharedPreferencesChange();
+            performNewQuery();
 
         } else if (nameOfTheClickedItem.equals(getString(R.string.nav_dr__list_item_03_search))){
             // Todo(23) remove toast and change code;
@@ -548,7 +543,7 @@ public class AllMoviesActivity extends AppCompatActivity
     /*
     * resets our current objects and calls Loader to initiate new query
     * */
-    private void performQueryAfterSharedPreferencesChange(){
+    private void performNewQuery(){
 
         // update the label of the Activity
         setLabelForActivity();
@@ -561,18 +556,12 @@ public class AllMoviesActivity extends AppCompatActivity
         // reset endless scroll listener when performing a new search
         recyclerViewScrollListener.resetState();
 
-        // todo (29): ar RecyclerViewScrollListener - teisingai nuresetina page #
-
         /*
         * Loader call - case 3 of 3
         * We call loader methods as we have just performed reset of the data set
         * */
         // initiate a new query
-        if(searchModeIsOn){
-            manageLoaders(LOADER_ID_02);
-        } else {
-            manageLoaders(LOADER_ID_01);
-        }
+        manageLoaders();
 
     }
 
@@ -638,6 +627,7 @@ public class AllMoviesActivity extends AppCompatActivity
             * */
             @Override
             public boolean onQueryTextSubmit(String query) {
+                searchQueryToRestore = query;
                 // update the state variable
                 searchQueryIsSubmitted = true;
                 // remove focus from SearchView
@@ -677,8 +667,9 @@ public class AllMoviesActivity extends AppCompatActivity
 
                 searchQuerySubmitted = "";
 
+                // Todo(36) do I want to perform the new query, maybe display the previous state
 
-                performQueryAfterSharedPreferencesChange(); //<--------------------------------------------------------------------------- ?????????????????????????????????????
+                performNewQuery(); //<--------------------------------------------------------------------------- ?????????????????????????????????????
 
 
                 return true;
@@ -772,10 +763,7 @@ public class AllMoviesActivity extends AppCompatActivity
             Toast.makeText(this, "My QUERY: " + searchQuerySubmitted, Toast.LENGTH_SHORT).show();
 
 
-            // Todo(34) rename the method if it works
-            performQueryAfterSharedPreferencesChange();
-
-
+            performNewQuery();
         }
     }
 
@@ -793,11 +781,9 @@ public class AllMoviesActivity extends AppCompatActivity
 
         // store the page number that has been used in the last query
         outState.putInt(PAGE_NUMBER_KEY, pageNumberBeingQueried);
-        // store the Movie ArrayList that has been already loaded
         outState.putParcelableArrayList(CACHED_MOVIE_LIST_KEY, cachedMovieData);
         // store the state (e.g. scroll position) of the layout
         outState.putParcelable(LINEAR_LAYOUT_MANAGER_KEY, recyclerView.getLayoutManager().onSaveInstanceState());
-        // store the activity mode
         outState.putBoolean(ACTIVITY_MODE_KEY, searchModeIsOn);
         // store the SearchView state (query submitted vs not)
         // before saving, check whether the query was not modified by the used after its submission
@@ -840,5 +826,18 @@ public class AllMoviesActivity extends AppCompatActivity
 
         // Commit the edits
         editor.apply();
+    }
+
+    /*****************************************************
+     * Other helper methods
+     ******************************************************
+     * */
+
+
+    /*
+    * Returns the last @jsonResponseCode
+    * */
+    public static Integer getLastJsonResponseCode(){
+        return jsonResponseCode;
     }
 }

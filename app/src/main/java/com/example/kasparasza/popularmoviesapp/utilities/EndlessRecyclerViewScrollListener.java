@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.widget.Toast;
 
+import com.example.kasparasza.popularmoviesapp.AllMoviesActivity;
+
 /**
  * The source code of the class has been taken from: https://gist.github.com/nesquena/d09dc68ff07e845cc622
  * Additional explanation of the logic can be found here: https://hackmd.io/s/HyLTXPvH
@@ -30,8 +32,6 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
     // Sets the starting page index. Since the Listener is triggered only after we ron out of the initial
     // data (this initial data relates to PageIndex = 1), we set startingPageIndex = 1 (not = 0).
     private int startingPageIndex = 1;
-
-    private Toast toast;
 
     private RecyclerView.LayoutManager mLayoutManager;
 
@@ -72,10 +72,13 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
 
         Context context = view.getContext();
 
-        // method is being performed only if there is a Network Connection present
+        // Note: method is being performed only if 1) there is a Network Connection present &
+        // 2) the response of the previous query was successful (contained a non-null result &
+        // did not contain the last json response page of results)
         // without this check a network request might be initiated (even if there is no network connection),
         // and the value of currentPage would increase
-        if(AppUtilities.checkNetworkConnection(context)){
+        if(AppUtilities.checkNetworkConnection(context) &&
+                AllMoviesActivity.getLastJsonResponseCode().equals(JsonUtilities.JSON_RESPONSE_WITH_RESULTS)){
             int lastVisibleItemPosition = 0;
             int totalItemCount = mLayoutManager.getItemCount();
 
