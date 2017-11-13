@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that defines a Movie object
@@ -35,10 +37,11 @@ public class Movie implements Parcelable{
     private String userRating;
     private int voteCount;
     private String releaseDate;
+    private int[] genreIdList;
 
     // class constructors:
     public Movie(int id, String title, String originalTitle, String posterLink, String plotSynopsis,
-                 String userRating, int voteCount, String releaseDate){
+                 String userRating, int voteCount, String releaseDate, int[] genreIdList){
         this.id = id;
         this.title = title;
         this.originalTitle = originalTitle;
@@ -47,6 +50,7 @@ public class Movie implements Parcelable{
         this.userRating = userRating;
         this.voteCount = voteCount;
         this.releaseDate = releaseDate;
+        this.genreIdList = genreIdList;
     }
 
 
@@ -85,6 +89,10 @@ public class Movie implements Parcelable{
         return voteCount;
     }
 
+    public int[] getGenreIdList() {
+        return genreIdList;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -117,16 +125,14 @@ public class Movie implements Parcelable{
         this.originalTitle = originalTitle;
     }
 
+    public void setGenreIdList(int[] genreIdList) {
+        this.genreIdList = genreIdList;
+    }
 
     /*****************************************************
      * Other methods implemented by the class
      ******************************************************
      * */
-    @Override
-    public String toString(){
-        return "" + title + " / release date: " + releaseDate + " / id: " + id + " / " + plotSynopsis +
-                " / rating: " + userRating + " / vote count: " + voteCount + " / poster: " + posterLink;
-    }
 
     /*
     * hashCode() & equals(Object obj) methods are overridden, so that it would be possible to compare
@@ -147,6 +153,7 @@ public class Movie implements Parcelable{
         Movie anotherMovie = (Movie) obj;
         return this.hashCode() == anotherMovie.hashCode();
     }
+
 
     /*****************************************************
      * Methods that implement Parcelable interface
@@ -186,6 +193,7 @@ public class Movie implements Parcelable{
         userRating = inputParcel.readString();
         voteCount = inputParcel.readInt();
         releaseDate = inputParcel.readString();
+        genreIdList = inputParcel.createIntArray();
     }
 
     /*
@@ -207,6 +215,7 @@ public class Movie implements Parcelable{
         destinationParcel.writeString(userRating);
         destinationParcel.writeInt(voteCount);
         destinationParcel.writeString(releaseDate);
+        destinationParcel.writeIntArray(genreIdList);
     }
 
     @Override

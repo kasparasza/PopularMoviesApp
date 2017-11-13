@@ -41,8 +41,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-// todo (10): Left to implement, compared to project rubric:
-// Movie details activity
 
 // todo (10): Left to implement, compared to the example:
 // SharedPreferences
@@ -664,13 +662,12 @@ public class AllMoviesActivity extends AppCompatActivity
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 searchModeIsOn = false;
 
-
-                searchQuerySubmitted = "";
-
-                // Todo(36) do I want to perform the new query, maybe display the previous state
-
-                performNewQuery(); //<--------------------------------------------------------------------------- ?????????????????????????????????????
-
+                // if no search query has been submitted, just close the search view,
+                // else - reload the data
+                if(!searchQuerySubmitted.equals("")){
+                    performNewQuery();
+                    searchQuerySubmitted = "";
+                }
 
                 return true;
             }

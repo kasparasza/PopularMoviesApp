@@ -48,10 +48,12 @@ public class AppUtilities {
     // https://api.themoviedb.org/3/discover/movie?api_key=c75a692f7ec1120be7a6029a67f5c0c3&query=Jack+Reacher&with_genres=18&primary_release_year=2014
     // https://api.themoviedb.org/3/search/movie?api_key=c75a692f7ec1120be7a6029a67f5c0c3&query=Jack+Reacher
     // https://api.themoviedb.org/3/search/movie?api_key=c75a692f7ec1120be7a6029a67f5c0c3&query=Jack+Reacher&year=2016
+    // https://api.themoviedb.org/3/movie/5/credits?api_key=c75a692f7ec1120be7a6029a67f5c0c3
 
     /* Parts of the path of the query */
     public static final String QUERY_PATH_POPULAR = "popular"; // queries for the most popular movies
     public static final String QUERY_PATH_TOP_RATED = "top_rated"; // queries for the movies top rated
+    public static final String QUERY_PATH_CREDITS = "credits"; // queries for the credits of a particular Movie
 
     /*
      * HTTP QUERY PARAMETERS - used in constructing movie poster query url
@@ -113,6 +115,27 @@ public class AppUtilities {
         Uri builtUrl = Uri.parse(BASE_MOVIE_POSTER_URL).buildUpon()
                 .appendPath(POSTER_SIZE[2]) // choose one from the available file sizes
                 .appendEncodedPath(posterStringUrl)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUrl.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    /**
+     * Builds the URL used to query www.themoviedb.org API for movie credits
+     *
+     * @return The URL to use to query the server.
+     */
+    public static URL buildCreditsUrl(int movieId){
+        Uri builtUrl = Uri.parse(BASE_MOVIE_DB_URL).buildUpon()
+                .appendPath(String.valueOf(movieId))
+                .appendPath(QUERY_PATH_CREDITS)
+                .appendQueryParameter(API_KEY_PARAM, API_KEY)
                 .build();
 
         URL url = null;
