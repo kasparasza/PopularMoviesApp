@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Label ordering must match values -->
+    <array name="pref_movie_genre_labels">
+        <item>@string/genre_any</item>
+        <item>@string/genre_action</item>
+        <item>@string/genre_adventure</item>
+        <item>@string/genre_animation</item>
+        <item>@string/genre_comedy</item>
+        <item>@string/genre_crime</item>
+        <item>@string/genre_documentary</item>
+        <item>@string/genre_drama</item>
+        <item>@string/genre_family</item>
+        <item>@string/genre_fantasy</item>
+        <item>@string/genre_history</item>
+        <item>@string/genre_horror</item>
+        <item>@string/genre_music</item>
+        <item>@string/genre_mystery</item>
+        <item>@string/genre_romance</item>
+        <item>@string/genre_science_fiction</item>
+        <item>@string/genre_thriller</item>
+        <item>@string/genre_tv_movie</item>
+        <item>@string/genre_war</item>
+        <item>@string/genre_western</item>
+    </array>
+    <array name="pref_movie_genre_values">
+        <item>@string/pref_genre_any_value</item>
+        <item>@string/pref_genre_action_value</item>
+        <item>@string/pref_genre_adventure_value</item>
+        <item>@string/pref_genre_animation_value</item>
+        <item>@string/pref_genre_comedy_value</item>
+        <item>@string/pref_genre_crime_value</item>
+        <item>@string/pref_genre_documentary_value</item>
+        <item>@string/pref_genre_drama_value</item>
+        <item>@string/pref_genre_family_value</item>
+        <item>@string/pref_genre_fantasy_value</item>
+        <item>@string/pref_genre_history_value</item>
+        <item>@string/pref_genre_horror_value</item>
+        <item>@string/pref_genre_music_value</item>
+        <item>@string/pref_genre_mystery_value</item>
+        <item>@string/pref_genre_romance_value</item>
+        <item>@string/pref_genre_science_fiction_value</item>
+        <item>@string/pref_genre_thriller_value</item>
+        <item>@string/pref_genre_tv_movie_value</item>
+        <item>@string/pref_genre_war_value</item>
+        <item>@string/pref_genre_western_value</item>
+    </array>
+
+</resources>

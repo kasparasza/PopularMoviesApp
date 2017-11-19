@@ -1,16 +1,15 @@
 package com.example.kasparasza.popularmoviesapp;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.example.kasparasza.popularmoviesapp.utilities.AppUtilities;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -92,27 +91,27 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
      * @param position - position of the item within the adapter's data set.
      */
     @Override
-    public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
+    public void onBindViewHolder(final MovieAdapterViewHolder holder, int position) {
         Movie movie = movieList.get(position);
-        String imageUrlLink = movie.getPosterLink();
+        String imageUrlLink = movie.getSmallPosterLink();
 
         // use of Picasso library to set ImageView
         // at first we check, whether the String with image link is not empty
         if (!imageUrlLink.matches(Movie.NO_POSTER_AVAILABLE)) {
             Picasso.with(context)
-                    .load(movie.getPosterLink())
+                    .load(movie.getSmallPosterLink())
                     .resize((int) context.getResources().getDimension(R.dimen.iv_movie_poster_width),
                             (int) context.getResources().getDimension(R.dimen.iv_movie_poster_height))
                     .placeholder(R.drawable.image_placeholder)
-                    .error(R.drawable.no_image_to_download)
-                    .centerInside()
+                    .error(R.drawable.no_image_available)
+                    .centerCrop()
                     .into(holder.moviePoster);
         } else {
             Picasso.with(context)
-                    .load(R.drawable.no_image_to_download)
+                    .load(R.drawable.no_image_available)
                     .resize((int) context.getResources().getDimension(R.dimen.iv_movie_poster_width),
                             (int) context.getResources().getDimension(R.dimen.iv_movie_poster_height))
-                    .centerInside()
+                    .centerCrop()
                     .into(holder.moviePoster);
         }
     }

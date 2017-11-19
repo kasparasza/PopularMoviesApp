@@ -27,6 +27,7 @@ Take this into account while setting dimensions dynamically in java. -->
     ------------------------------------------------
     <dimen name="nav_dr_list_item_height">48dp</dimen>
     <dimen name="nav_dr_list_item_icon_size">24dp</dimen>
+    <dimen name="nav_dr_image_size">144dp</dimen>
     <dimen name="nav_dr_width">240dp</dimen>
 
     ------------------------------------------------
@@ -34,5 +35,11 @@ Take this into account while setting dimensions dynamically in java. -->
     ------------------------------------------------
     <dimen name="about_app_icon_size">144dp</dimen>
     <dimen name="about_TMDb_icon_size">96dp</dimen>
+
+    ------------------------------------------------
+    <!--Dimensions for text -->
+    ------------------------------------------------
+
+    <dimen name="font_size_24_sp">24sp</dimen>
 
 </resources>

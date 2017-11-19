@@ -24,7 +24,9 @@
             -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
             <!-- meta tag provides additional data for display of Search results -->
@@ -45,6 +47,13 @@
         <!-- //Todo (manif_01)- parent activity definition here may be not good, that depends on final navigation -->
         <activity
             android:name=".AboutActivity"
+            android:parentActivityName=".AllMoviesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AllMoviesActivity" />
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
             android:parentActivityName=".AllMoviesActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

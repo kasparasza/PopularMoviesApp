@@ -15,6 +15,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -58,7 +59,8 @@ import java.util.List;
 
 public class AllMoviesActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<List<Movie>>,
-        MovieAdapter.MovieAdapterOnClickHandler {
+        MovieAdapter.MovieAdapterOnClickHandler,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = AllMoviesActivity.class.getSimpleName();
 
@@ -73,6 +75,7 @@ public class AllMoviesActivity extends AppCompatActivity
     private static final String DEFAULT_QUERY_PATH = "DEFAULT_QUERY_PATH";
 
     // class variables, widgets used, etc.:
+    private ActionBar actionBar;
     private TextView errorMessageDisplayView;
     private ProgressBar progressBar;
     private RecyclerView recyclerView;
@@ -91,7 +94,11 @@ public class AllMoviesActivity extends AppCompatActivity
     // variables used for SharedPreferences:
     private String sortOrderOfResults; // default sort order of Movies
     private SharedPreferences sharedPreferences;
-    private ActionBar actionBar;
+    private boolean persistPreferences;
+    private String preferredMovieGenre;
+    private String preferredStartYear;
+    private String preferredEndYear;
+    private boolean preferenceValuesAreDefault;
     // variables used for SearchView functionality
     private SearchView searchView;
     private String searchQueryToRestore = "";
@@ -101,7 +108,7 @@ public class AllMoviesActivity extends AppCompatActivity
     private boolean searchQueryIsSubmitted;
     private FrameLayout rootLayout;
 
-    // todo(11): movieAdapter needs to implement further methods (e.g. invalidate(), etc)
+    // todo(11): turn some of the variables into local ones
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +116,7 @@ public class AllMoviesActivity extends AppCompatActivity
         setContentView(R.layout.activity_all_movies);
 
         // initialisation of objects
-        errorMessageDisplayView = (TextView) findViewById(R.id.tv_display_http_error_message);
+        errorMessageDisplayView = (TextView) findViewById(R.id.tv_display_error_message);
         progressBar = (ProgressBar) findViewById(R.id.pb_movie_db_query);
         recyclerView = (RecyclerView) findViewById(R.id.rv_all_movies_grid);
         navDrLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -159,17 +166,27 @@ public class AllMoviesActivity extends AppCompatActivity
 
         // --------- set up of Shared Preferences (start) ----------
 
-        // note: as there is only one SharedPreferences file for this activity, we use getPreferences()
-        // instead of getSharedPreferences();
-        sharedPreferences = getPreferences(MODE_PRIVATE);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Restore the preferences
-        // note: if no key is found - then the following default value will be used: @AppUtilities.QUERY_PATH_POPULAR
-        sortOrderOfResults = sharedPreferences.getString(DEFAULT_QUERY_PATH, AppUtilities.QUERY_PATH_POPULAR);
+        // preference that defines user's preference for persisting preferences in PreferenceFragment
+        persistPreferences = sharedPreferences.getBoolean(getString(R.string.pref_save_on_exit_key),
+                false);
+        // if this is "fresh" start of Activity, we reset Preferences if necessary
+        if(savedInstanceState == null && !persistPreferences){
+            resetSharedPreferences();
+        }
+
+        // register listener to update UI after the preferences are changed;
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        // initialise preference values
+        getSharedPreferenceValues();
+        // initialise boolean variable @preferenceValuesAreDefault
+        // depending on its value, our Loader will use different query
+        checkForDefaultSharedPreferences();
 
         // --------- set up of Shared Preferences (end) ----------
 
-        // set the label for the Activity (depending on the @sortOrderOfResults)
+        // set the label for the Activity
         setLabelForActivity();
 
         // --------- set up of the recycler view (start) ----------
@@ -329,6 +346,89 @@ public class AllMoviesActivity extends AppCompatActivity
     }
 
     /*****************************************************
+     * Methods that control SharedPreferences functionality
+     ******************************************************
+     * */
+
+    /**
+    * resets SharedPreferences of PreferenceFragment to their default values
+    * */
+    private void resetSharedPreferences(){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(getString(R.string.pref_genre_key), getString(R.string.pref_genre_any_value));
+        editor.putString(getString(R.string.pref_earliest_year_key), getString(R.string.pref_earliest_year_default));
+        editor.putString(getString(R.string.pref_latest_year_key), getString(R.string.pref_latest_year_default));
+        // Commit the edits
+        editor.apply();
+    }
+
+    /**
+     * retrieve values of SharedPreferences
+     * */
+    private void getSharedPreferenceValues(){
+        // retrieve values
+        // note: second item is the default value
+        sortOrderOfResults = sharedPreferences.getString(DEFAULT_QUERY_PATH, AppUtilities.QUERY_PATH_POPULAR);
+        preferredMovieGenre = sharedPreferences.getString(getString(R.string.pref_genre_key),
+                getString(R.string.pref_genre_any_value));
+        preferredStartYear = sharedPreferences.getString(getString(R.string.pref_earliest_year_key),
+                getString(R.string.pref_earliest_year_default));
+        preferredEndYear = sharedPreferences.getString(getString(R.string.pref_latest_year_key),
+                getString(R.string.pref_latest_year_default));
+    }
+
+    /**
+    * updates value of a Preference after its change, and (if necessary) calls a new query of data
+    * called by onSharedPreferenceChangeListener
+    * */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(DEFAULT_QUERY_PATH)){
+            sortOrderOfResults = sharedPreferences.getString(key, AppUtilities.QUERY_PATH_POPULAR);
+        } else if(key.equals(getString(R.string.pref_genre_key))){
+            preferredMovieGenre = sharedPreferences.getString(key,
+                    getString(R.string.pref_genre_any_value));
+        } else if(key.equals(getString(R.string.pref_earliest_year_key))){
+            preferredStartYear = sharedPreferences.getString(key,
+                    getString(R.string.pref_earliest_year_default));
+        } else if(key.equals(getString(R.string.pref_latest_year_key))){
+            preferredEndYear = sharedPreferences.getString(key,
+                    getString(R.string.pref_latest_year_default));
+        } else if(key.equals(getString(R.string.pref_save_on_exit_key))){
+            persistPreferences = sharedPreferences.getBoolean(key,
+                    getResources().getBoolean(R.bool.pref_save_on_exit_default));}
+
+        // update boolean value
+        checkForDefaultSharedPreferences();
+
+        // call for reload
+        // Note: reload is potentially necessary after any change, except for the preference
+        // that controls change on exit
+        if(!key.equals(getString(R.string.pref_save_on_exit_key))){
+            performNewQuery();
+        }
+    }
+
+    /**
+    * initialises or updates value of boolean variable
+    * If True - preferences are default -> further http queries will call default query path
+    * If False - the user has changed the preferences from default values ->  further http queries
+    * will call query path "discover"
+    * */
+    private void checkForDefaultSharedPreferences(){
+        preferenceValuesAreDefault = (preferredMovieGenre.equals(getString(R.string.pref_genre_any_value)) &&
+                preferredStartYear.equals(getString(R.string.pref_earliest_year_default)) &&
+                preferredEndYear.equals(getString(R.string.pref_latest_year_default)));
+    }
+
+    // use OnDestroy in order to unregister SharedPreferenceChangeListener
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    /*****************************************************
      * Methods that control UI functionality
      ******************************************************
      * */
@@ -389,7 +489,7 @@ public class AllMoviesActivity extends AppCompatActivity
      ******************************************************
      * */
 
-    /*
+    /**
     * Creates an instance of AsyncTaskLoader
     *
     * @param id - unique id for each loader
@@ -412,7 +512,9 @@ public class AllMoviesActivity extends AppCompatActivity
             public List<Movie> loadInBackground() {
 
                 // obtain the Url, used for the http request
-                URL url = AppUtilities.buildUrl(pageNumberBeingQueried, sortOrderOfResults, searchQuerySubmitted);
+                URL url = AppUtilities.buildUrl(pageNumberBeingQueried, sortOrderOfResults,
+                        searchQuerySubmitted, preferredMovieGenre, preferredStartYear,
+                        preferredEndYear, preferenceValuesAreDefault);
 
                 // perform the url request
                 String jsonResponseString = null;
@@ -461,10 +563,10 @@ public class AllMoviesActivity extends AppCompatActivity
             // update the data set of the adapter
             movieAdapter.setAdapterData(cachedMovieData);
 
-        } else if (jsonResponseCode.equals(JsonUtilities.JSON_RESPONSE_NO_RESULTS)) {
-
-                Toast.makeText(this, "NO RESULTS", Toast.LENGTH_SHORT).show(); //----------------------------------------- REPLACE WITH A VIEW
-
+        } else if (jsonResponseCode!= null &&
+                jsonResponseCode.equals(JsonUtilities.JSON_RESPONSE_NO_RESULTS)) {
+            errorMessageDisplayView.setVisibility(View.VISIBLE);
+            errorMessageDisplayView.setText(R.string.tv_no_search_results);
         } else {
             showLoadingErrorMessage();
         }
@@ -524,9 +626,11 @@ public class AllMoviesActivity extends AppCompatActivity
             // call helper method to perform further actions
             performNewQuery();
 
-        } else if (nameOfTheClickedItem.equals(getString(R.string.nav_dr__list_item_03_search))){
-            // Todo(23) remove toast and change code;
-            Toast.makeText(this, nameOfTheClickedItem, Toast.LENGTH_SHORT).show();
+        } else if (nameOfTheClickedItem.equals(getString(R.string.nav_dr__list_item_03_settings))){
+            // Todo(23) check the actions according to other options
+
+            Intent openSettingsActivity = new Intent(this, SettingsActivity.class);
+            startActivity(openSettingsActivity);
 
         } else if (nameOfTheClickedItem.equals(getString(R.string.nav_dr__list_item_04_about))) {
 
@@ -568,9 +672,9 @@ public class AllMoviesActivity extends AppCompatActivity
     * */
     private void prepareNavDrawerContents(){
         navDrawerItems = new ArrayList<>();
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr_list_item_01_most_popular)));
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr__list_item_02_top_rated)));
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr__list_item_03_search), R.drawable.ic_action_search));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr_list_item_01_most_popular), R.drawable.ic_bullet_point));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr__list_item_02_top_rated), R.drawable.ic_bullet_point));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr__list_item_03_settings), R.drawable.ic_action_settings));
         navDrawerItems.add(new NavDrawerItem(getString(R.string.nav_dr__list_item_04_about), R.drawable.ic_action_info));
     }
 
@@ -819,11 +923,16 @@ public class AllMoviesActivity extends AppCompatActivity
 
         // We need an Editor object to make preference changes
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        // persist preferences that are not set by the Preferences Fragment
         editor.putString(DEFAULT_QUERY_PATH, sortOrderOfResults);
+        // Note: for preferences that are set by the Preferences Fragment no additional
+        // actions to ensure their persistance are needed. However, if the user has chosen the
+        // option not to save the changes upon exit
 
         // Commit the edits
         editor.apply();
     }
+
 
     /*****************************************************
      * Other helper methods
@@ -837,4 +946,6 @@ public class AllMoviesActivity extends AppCompatActivity
     public static Integer getLastJsonResponseCode(){
         return jsonResponseCode;
     }
+
+
 }

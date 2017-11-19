@@ -150,12 +150,14 @@ public class JsonUtilities {
                     }
 
                     // extract "poster_path" for the link to the poster of a Movie in the Db
-                    String posterLink;
+                    String smallPosterLink = Movie.NO_POSTER_AVAILABLE;
+                    String bigPosterLink = Movie.NO_POSTER_AVAILABLE;
                     if (oneMovie.has(POSTER_PATH)) {
                         String partOfPosterLink = oneMovie.getString(POSTER_PATH);
-                        posterLink = AppUtilities.buildPosterUrl(partOfPosterLink).toString();
-                    } else {
-                        posterLink = Movie.NO_POSTER_AVAILABLE;
+                        if(!partOfPosterLink.equals("null")){
+                            smallPosterLink = AppUtilities.buildPosterUrl(partOfPosterLink, PosterSizes.w185).toString();
+                            bigPosterLink = AppUtilities.buildPosterUrl(partOfPosterLink, PosterSizes.w500).toString();
+                        }
                     }
 
                     // extract "overview" for the plot synopsis of a Movie in the Db
@@ -190,8 +192,8 @@ public class JsonUtilities {
                     }
 
                     // create Movie object from the extracted data
-                    Movie movie = new Movie(id, title, originalTitle, posterLink, plotSynopsis,
-                            userRating, voteCount, releaseDate, arrayOfIds);
+                    Movie movie = new Movie(id, title, originalTitle, smallPosterLink, bigPosterLink,
+                            plotSynopsis, userRating, voteCount, releaseDate, arrayOfIds);
 
                     // add the object to List
                     movieList.add(movie);
@@ -233,6 +235,8 @@ public class JsonUtilities {
 
                 JSONArray resultsArray = jsonObject.getJSONArray(CAST);
 
+                // todo(801) correct comment and the magic number
+
                 int maxNumberOfPersons = 4; // max number of cast members to be displayed
                 if (resultsArray.length() < maxNumberOfPersons) {
                     maxNumberOfPersons = resultsArray.length();
@@ -249,7 +253,7 @@ public class JsonUtilities {
                     } else {
                         name = "";
                     }
-                    cast += name;
+                    cast += name + separator;
                 }
             }
 
@@ -280,14 +284,15 @@ public class JsonUtilities {
             Log.e(TAG, "An exception was encountered while trying to read JSONString " + json_exception);
         }
 
-        cast = cast.substring(0, cast.lastIndexOf(separator));
-        director = director.substring(0, director.lastIndexOf(separator));
-
         if(cast.equals("")){
             cast = NOT_AVAILABLE;
+        } else {
+            cast = cast.substring(0, cast.lastIndexOf(separator));
         }
         if(director.equals("")){
             director = NOT_AVAILABLE;
+        } else {
+            director = director.substring(0, director.lastIndexOf(separator));
         }
 
         // return result of the method

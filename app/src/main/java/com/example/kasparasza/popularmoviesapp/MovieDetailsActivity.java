@@ -1,17 +1,15 @@
 package com.example.kasparasza.popularmoviesapp;
 
-import android.app.SearchManager;
 import android.content.Intent;
-import android.icu.text.NumberFormat;
 import android.os.Build;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,8 +21,6 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MovieDetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Pair<String, String>> {
 
@@ -32,7 +28,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
 
     // constants used as ID's, key names, etc.:
     private static int LOADER_ID_01 = 1;
-    private static String LOADING_STATUS_KEY = "LOADING_STATUS_KEY";
+    private static String MOVIE_CAST_STRING_KEY = "MOVIE_CAST_STRING_KEY";
+    private static String MOVIE_DIRECTOR_STRING_KEY = "MOVIE_DIRECTOR_STRING_KEY";
 
     // class variables, widgets used, etc.:
     private TextView movieOriginalTitle;
@@ -46,11 +43,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
     private ImageView moviePoster;
     private ActionBar actionBar;
     private Integer movieId = null;
-    private Boolean alreadyLoaded = false;
-
-
-    // Todo(701) manage loaders call
-    // Retain activity state on Rotation
+    private String movieMainCastString;
+    private String movieDirectorString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +65,11 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
 
         // restore instance state of variables
         if(savedInstanceState != null){
-            if(savedInstanceState.containsKey(LOADING_STATUS_KEY)){
-                alreadyLoaded = savedInstanceState.getBoolean(LOADING_STATUS_KEY);
+            if(savedInstanceState.containsKey(MOVIE_CAST_STRING_KEY)){
+                movieMainCastString = savedInstanceState.getString(MOVIE_CAST_STRING_KEY);
+            }
+            if(savedInstanceState.containsKey(MOVIE_DIRECTOR_STRING_KEY)){
+                movieDirectorString = savedInstanceState.getString(MOVIE_DIRECTOR_STRING_KEY);
             }
         }
 
@@ -85,20 +82,18 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
 
                 // Initiate LoaderManager and Loaders
                 movieId = movie.getId();
-                if (!alreadyLoaded) {
-                    LoaderManager loaderManager = getSupportLoaderManager();
-                    if (loaderManager.getLoader(LOADER_ID_01) == null) {
-                        loaderManager.initLoader(LOADER_ID_01, null, this);
-                    } else {
-                        loaderManager.restartLoader(LOADER_ID_01, null, this);
-                    }
+                LoaderManager loaderManager = getSupportLoaderManager();
+                if (loaderManager.getLoader(LOADER_ID_01) == null) {
+                    loaderManager.initLoader(LOADER_ID_01, null, this);
+                } else {
+                    loaderManager.restartLoader(LOADER_ID_01, null, this);
                 }
 
                 // set up UI
                 setUpViews(movie);
             }
         }
-        //Todo (300) what home button and back button functionality should be?
+
         //Todo (310) movie image has to be of a better quality?
     }
 
@@ -106,6 +101,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
     /*****************************************************
      * Methods, responsible for UI implementation
      ******************************************************/
+
     /*
     * Links UI views with data to be displayed
     *
@@ -122,7 +118,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
             movieOriginalTitle.setVisibility(View.GONE);
         }
         if (!movie.getPlotSynopsis().equals(Movie.NO_SYNOPSIS_AVAILABLE)) {
-            moviePlotSynopsis.setText(movie.getPlotSynopsis());
+            String text = getString(R.string.movie_plot, movie.getPlotSynopsis());
+            moviePlotSynopsis.setText(getStyledText(text));
         }
         if (!movie.getUserRating().equals(Movie.NO_USER_RATING_AVAILABLE)) {
             String text = getString(R.string.movie_details_rating, movie.getUserRating());
@@ -143,24 +140,25 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
         // Todo(303) Image size in dp should be probably higher
         // use of Picasso library to set ImageView
         // at first we check, whether the String with image link is not empty
-        String imageUrlLink = movie.getPosterLink();
+        String imageUrlLink = movie.getBigPosterLink();
         if (!imageUrlLink.matches(Movie.NO_POSTER_AVAILABLE)) {
             Picasso.with(this)
-                    .load(movie.getPosterLink())
+                    .load(imageUrlLink)
                     .resize((int) getResources().getDimension(R.dimen.iv_movie_poster_width),
                             (int) getResources().getDimension(R.dimen.iv_movie_poster_height))
                     .placeholder(R.drawable.image_placeholder)
-                    .error(R.drawable.no_image_to_download)
+                    .error(R.drawable.no_image_available)
                     .centerInside()
                     .into(moviePoster);
         } else {
             Picasso.with(this)
-                    .load(R.drawable.no_image_to_download)
+                    .load(R.drawable.no_image_available)
                     .resize((int) getResources().getDimension(R.dimen.iv_movie_poster_width),
                             (int) getResources().getDimension(R.dimen.iv_movie_poster_height))
-                    .centerInside()
+                    .centerCrop()
                     .into(moviePoster);
         }
+        moviePoster.setBackgroundColor(ContextCompat.getColor(this, R.color.colorBackgroundDark));
     }
 
     /*****************************************************
@@ -168,10 +166,27 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
      * a control upon all the Loaders used in the Activity
      ******************************************************/
 
-    // Todo(702) describe the methods
+    /**
+    * Creates an instance of AsyncTaskLoader
+    *
+    * @param id - unique id for each loader
+    * @param args - an optional set of additional parameters passed to a Loader
+    * @return Loader that will load additional info about a particular Movie object
+    * */
     @Override
     public Loader<Pair<String, String>> onCreateLoader(int id, Bundle args) {
         return new AsyncTaskLoader<Pair<String, String>>(this) {
+
+            // Control the start of Loading. Start only if the data is not already available
+            @Override
+            protected void onStartLoading() {
+                if(movieMainCastString != null && movieMainCastString != null ){
+                    deliverResult(new Pair<>(movieMainCastString, movieDirectorString));
+                } else {
+                    forceLoad();
+                }
+
+            }
 
             // Method that will perform the actual url http request in another thread
             @Override
@@ -204,33 +219,26 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
     @Override
     public void onLoadFinished(Loader<Pair<String, String>> loader, Pair<String, String> data) {
 
-        Log.d(TAG, "Load has finished");
-
+        // update UI
         if(data != null){
-            // update UI
 
-            Log.d(TAG, "Load has finished - results: " + data.first + " , " + data.second);
-
-            // todo(711) allow for multiple directors
-            movieDirector.setVisibility(View.VISIBLE);
-            String text = getString(R.string.movie_directors, data.second);
+            movieDirectorString = data.second;
+            String text = getString(R.string.movie_directors, movieDirectorString);
             movieDirector.setText(getStyledText(text));
 
-            movieCast.setVisibility(View.VISIBLE);
-            text = getString(R.string.movie_cast, data.first);
+            movieMainCastString = data.first;
+            text = getString(R.string.movie_cast, movieMainCastString);
             movieCast.setText(getStyledText(text));
-
-            // update the status code of Loader
-            alreadyLoaded = true;
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Pair<String, String>> loader) {
         loader.reset();
-        alreadyLoaded = false;
-        movieDirector.setVisibility(View.INVISIBLE);
-        movieCast.setVisibility(View.INVISIBLE);
+
+        // set the Strings to null, otherwise forceLoad() will not be called
+        movieDirectorString = null;
+        movieMainCastString = null;
     }
 
     /*****************************************************
@@ -245,7 +253,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean(LOADING_STATUS_KEY, alreadyLoaded);
+        outState.putString(MOVIE_CAST_STRING_KEY, movieMainCastString);
+        outState.putString(MOVIE_DIRECTOR_STRING_KEY, movieDirectorString);
     }
 
     /*****************************************************
@@ -275,6 +284,9 @@ public class MovieDetailsActivity extends AppCompatActivity implements LoaderMan
     public String getMovieGenres(int[] idList) {
         String result = "";
         String separator = ", ";
+        if(idList.length == 0){
+            return result;
+        }
         for (int id : idList) {
             switch (id) {
                 case 28:

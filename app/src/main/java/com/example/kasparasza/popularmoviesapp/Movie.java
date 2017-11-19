@@ -3,10 +3,6 @@ package com.example.kasparasza.popularmoviesapp;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Class that defines a Movie object
  */
@@ -17,7 +13,6 @@ public class Movie implements Parcelable{
 
     // static values used in packing Movie and other objects to Intents:
     public static final String MOVIE_OBJECT = "MOVIE_OBJECT";
-    public static final String MOVIE_SEARCH_QUERY_KEY = "MOVIE_SEARCH_QUERY_KEY";
 
     // static values used in parsing Movie objects in JSON:
     public static final int NO_ID_AVAILABLE = 0;
@@ -32,7 +27,8 @@ public class Movie implements Parcelable{
     private int id;
     private String title;
     private String originalTitle;
-    private String posterLink;
+    private String smallPosterLink;
+    private String bigPosterLink;
     private String plotSynopsis;
     private String userRating;
     private int voteCount;
@@ -40,12 +36,14 @@ public class Movie implements Parcelable{
     private int[] genreIdList;
 
     // class constructors:
-    public Movie(int id, String title, String originalTitle, String posterLink, String plotSynopsis,
-                 String userRating, int voteCount, String releaseDate, int[] genreIdList){
+    public Movie(int id, String title, String originalTitle, String smallPosterLink,
+                 String bigPosterLink, String plotSynopsis, String userRating,
+                 int voteCount, String releaseDate, int[] genreIdList){
         this.id = id;
         this.title = title;
         this.originalTitle = originalTitle;
-        this.posterLink = posterLink;
+        this.smallPosterLink = smallPosterLink;
+        this.bigPosterLink = bigPosterLink;
         this.plotSynopsis = plotSynopsis;
         this.userRating = userRating;
         this.voteCount = voteCount;
@@ -65,8 +63,12 @@ public class Movie implements Parcelable{
         return title;
     }
 
-    public String getPosterLink() {
-        return posterLink;
+    public String getSmallPosterLink() {
+        return smallPosterLink;
+    }
+
+    public String getBigPosterLink() {
+        return bigPosterLink;
     }
 
     public String getPlotSynopsis() {
@@ -101,8 +103,12 @@ public class Movie implements Parcelable{
         this.title = title;
     }
 
-    public void setPosterLink(String posterLink) {
-        this.posterLink = posterLink;
+    public void setSmallPosterLink(String smallPosterLink) {
+        this.smallPosterLink = smallPosterLink;
+    }
+
+    public void setBigPosterLink(String bigPosterLink) {
+        this.bigPosterLink = bigPosterLink;
     }
 
     public void setPlotSynopsis(String plotSynopsis) {
@@ -154,7 +160,6 @@ public class Movie implements Parcelable{
         return this.hashCode() == anotherMovie.hashCode();
     }
 
-
     /*****************************************************
      * Methods that implement Parcelable interface
      ******************************************************
@@ -188,7 +193,8 @@ public class Movie implements Parcelable{
         id = inputParcel.readInt();
         title = inputParcel.readString();
         originalTitle = inputParcel.readString();
-        posterLink = inputParcel.readString();
+        smallPosterLink = inputParcel.readString();
+        bigPosterLink = inputParcel.readString();
         plotSynopsis = inputParcel.readString();
         userRating = inputParcel.readString();
         voteCount = inputParcel.readInt();
@@ -210,7 +216,8 @@ public class Movie implements Parcelable{
         destinationParcel.writeInt(id);
         destinationParcel.writeString(title);
         destinationParcel.writeString(originalTitle);
-        destinationParcel.writeString(posterLink);
+        destinationParcel.writeString(smallPosterLink);
+        destinationParcel.writeString(bigPosterLink);
         destinationParcel.writeString(plotSynopsis);
         destinationParcel.writeString(userRating);
         destinationParcel.writeInt(voteCount);

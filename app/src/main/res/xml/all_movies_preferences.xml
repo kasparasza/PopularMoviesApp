@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="@string/pref_genre_any_value"
+        android:entries="@array/pref_movie_genre_labels"
+        android:entryValues="@array/pref_movie_genre_values"
+        android:key="@string/pref_genre_key"
+        android:summary="%s"
+        android:title="@string/pref_genre_label" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_earliest_year_default"
+        android:key="@string/pref_earliest_year_key"
+        android:title="@string/pref_earliest_year_label" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_latest_year_default"
+        android:key="@string/pref_latest_year_key"
+        android:title="@string/pref_latest_year_label" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/pref_save_on_exit_default"
+        android:key="@string/pref_save_on_exit_key"
+        android:summaryOff="@string/pref_save_on_exit_false"
+        android:summaryOn="@string/pref_save_on_exit_true"
+        android:title="@string/pref_save_on_exit_label" />
+
+</PreferenceScreen>
