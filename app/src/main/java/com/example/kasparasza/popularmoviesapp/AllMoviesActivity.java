@@ -246,9 +246,6 @@ public class AllMoviesActivity extends AppCompatActivity
                     public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                         pageNumberBeingQueried = page;
 
-                        // Todo (13) Logging of our Parameters - to be removed
-                        Toast.makeText(getApplicationContext(), "onLoadMore was called; page: " + page, Toast.LENGTH_SHORT).show();
-
                         /*
                         * Loader call - case 2 of 3
                         * We call loader methods in case our recycler view is running out of items for display
